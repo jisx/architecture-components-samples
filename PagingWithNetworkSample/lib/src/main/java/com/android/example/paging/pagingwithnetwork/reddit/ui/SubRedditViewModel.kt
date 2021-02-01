@@ -48,13 +48,16 @@ class SubRedditViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val posts = flowOf(
-        clearListCh.receiveAsFlow().map { PagingData.empty<RedditPost>() },
-        savedStateHandle.getLiveData<String>(KEY_SUBREDDIT)
-            .asFlow()
-            .flatMapLatest { repository.postsOfSubreddit(it, 30) }
-            // cachedIn() shares the paging state across multiple consumers of posts,
-            // e.g. different generations of UI across rotation config change
-            .cachedIn(viewModelScope)
+            clearListCh.receiveAsFlow().map {
+                println(111)
+                PagingData.empty<RedditPost>()
+            },
+            savedStateHandle.getLiveData<String>(KEY_SUBREDDIT)
+                    .asFlow()
+                    .flatMapLatest { repository.postsOfSubreddit(it, 30) }
+                    // cachedIn() shares the paging state across multiple consumers of posts,
+                    // e.g. different generations of UI across rotation config change
+                    .cachedIn(viewModelScope)
     ).flattenMerge(2)
 
     fun shouldShowSubreddit(
@@ -62,8 +65,6 @@ class SubRedditViewModel(
     ) = savedStateHandle.get<String>(KEY_SUBREDDIT) != subreddit
 
     fun showSubreddit(subreddit: String) {
-        if (!shouldShowSubreddit(subreddit)) return
-
         clearListCh.offer(Unit)
 
         savedStateHandle.set(KEY_SUBREDDIT, subreddit)
